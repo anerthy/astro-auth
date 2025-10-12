@@ -11,8 +11,8 @@
       <li class="font-semibold text-gray-700">
         <a href="/login">Profile</a>
       </li>
-      <li class="font-semibold text-gray-700">
-        <a href="/logout">Logout</a>
+      <li id="logout" class="font-semibold text-gray-700">
+        Logout
       </li>
       <li>
         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -39,3 +39,21 @@
     </ul>
   </div>
 </nav>
+
+<script>
+import { actions } from "astro:actions";
+
+  const logoutElement = document.getElementById('logout') as HTMLLIElement;
+
+  logoutElement.addEventListener('click', async () => {
+    const { error } = await actions.logoutUser();
+
+    if (error) {
+      console.error('Logout failed:', error);
+      return;
+    }
+
+    window.location.href = '/';
+  });
+
+</script>
