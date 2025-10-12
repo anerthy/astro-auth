@@ -96,8 +96,9 @@ const rememberMe = !!email;
 </AuthLayout>
 
 <script>
-import { ActionError, actions } from "astro:actions";
-
+import { isInputError } from "astro:actions";
+import { actions } from "astro:actions";
+import Swal from 'sweetalert2';
 
   const form = document.querySelector('form') as HTMLFormElement;
   const submitButton = form.querySelector('#btn-submit') as HTMLButtonElement;
@@ -110,19 +111,65 @@ import { ActionError, actions } from "astro:actions";
 
     const {data, error } = await actions.registerUser(formData);
 
-    if (error instanceof ActionError){
-      console.log(error);
-    };
-
     if (error) {
-      console.error('Something went wrong:', error.message);
+      
+      if (isInputError(error)) {
+        
+        if (error.fields.name){
+          const nameError = error.fields.name.join(', ');
+          Swal.fire({
+            icon: 'error',
+            title: 'Name Error',
+            text: nameError,
+          });
+        }
+
+        if (error.fields.email){
+          const emailError = error.fields.email.join(', ');
+          Swal.fire({
+            icon: 'error',
+            title: 'Email Error',
+            text: emailError,
+          });
+        }
+
+        if (error.fields.password){
+          const passwordError = error.fields.password.join(', ');
+          Swal.fire({
+            icon: 'error',
+            title: 'Password Error',
+            text: passwordError,
+          });
+        }
+
+        submitButton.removeAttribute('disabled');
+        return;
+
+      }
+
+      Swal.fire({
+        icon: 'error',
+        title: 'Oops...',
+        text: error.message,
+      });
+    
       submitButton.removeAttribute('disabled');
       return;
     }
 
-    alert(data.message);
+    if (data!.ok) {
 
-    submitButton.removeAttribute('disabled');
+      Swal.fire({
+        icon: 'success',
+        title: 'Success!',
+        text: data.message,
+      });
+      submitButton.removeAttribute('disabled');
+      form.reset();
+
+      window.location.replace('/protected');
+    }
+
   });
 
 </script>
