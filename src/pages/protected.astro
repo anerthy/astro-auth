@@ -7,8 +7,7 @@ const firebaseUser = firebase.auth.currentUser;
 if (!firebaseUser) {
   Astro.redirect("/login");
 }
-console.log(firebaseUser);
-
+await firebaseUser?.reload();
 const { emailVerified, displayName, email, photoURL } = firebaseUser!;
 const name = displayName ?? 'Unknown User';
 ---

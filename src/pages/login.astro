@@ -63,6 +63,19 @@ const rememberMe = !!email;
           >
             Sign in
           </button>
+
+          <div class="flex flex-1 w-full my-2">
+            <div class="w-full border-t-2 border-gray-500"></div>
+          </div>
+
+          <button
+            id="btn-google"
+            type="button"
+            class="disabled:bg-gray-400 w-full flex justify-center bg-blue-500 hover:bg-blue-600 text-gray-100 p-3 rounded-full tracking-wide font-semibold shadow-lg cursor-pointer transition ease-in duration-500"
+          >
+            Sign in with Google
+          </button>
+
         </div>
       </form>
       <div class="pt-5 text-center text-gray-400 text-xs">
@@ -82,13 +95,16 @@ const rememberMe = !!email;
 </AuthLayout>
 
 <script>
+import { firebase } from "@/firebase/config";
 import { isInputError } from "astro:actions";
 import { ActionError, actions } from "astro:actions";
+import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import Swal from "sweetalert2";
 
 
   const form = document.querySelector('form') as HTMLFormElement;
   const submitButton = form.querySelector('#btn-submit') as HTMLButtonElement;
+  const googleButton = form.querySelector('#btn-google') as HTMLButtonElement;
 
   form.addEventListener('submit', async( event ) => {
     event.preventDefault();
@@ -140,6 +156,38 @@ import Swal from "sweetalert2";
 
     if (data) {
       window.location.replace('/protected');
+    }
+
+  });
+
+  googleButton.addEventListener('click', async() => {
+    googleButton.setAttribute('disabled', 'disabled'); 
+    
+    const provider = new GoogleAuthProvider();
+
+    try {
+      // obtener credenciales
+      const credentials = await signInWithPopup(firebase.auth, provider);
+
+      // verificar credenciales en backend
+      const { error } = await actions.loginWithGoogle(credentials);
+
+      if (error) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Oops...',
+          text: error.message,
+        });
+        return;
+      } 
+
+      googleButton.removeAttribute('disabled');
+      googleButton.innerText = 'Redirecting...';
+      window.location.replace('/protected');
+
+    } catch (error) {
+      console.error(error);
+      googleButton.removeAttribute('disabled');
     }
 
   });
