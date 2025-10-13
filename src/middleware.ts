@@ -1,15 +1,21 @@
-import { defineMiddleware } from "astro:middleware";
+import { defineMiddleware } from 'astro:middleware';
+import { firebase } from './firebase/config';
 
-const privateRoutes = ["/protected", "/profile"];
+const privateRoutes = ['/protected'];
 
-export const onRequest = defineMiddleware((context, next) => {
+export const onRequest = defineMiddleware(({ locals }, next) => {
 
-  const { url, request } = context;
-  
-  const authHeaders = request.headers.get('authorization') ?? '';
-  
-  if (privateRoutes.includes(url.pathname)) {
-    null;
+  const isLoggedIn = !!firebase.auth.currentUser;
+  const user = firebase.auth.currentUser;
+
+  locals.isLoggedIn = isLoggedIn;
+  if (user){
+    locals.user = {
+      email : user.email!,
+      name : user.displayName!,
+      avatar : user.photoURL ?? '', 
+      emailVerified : user.emailVerified
+    };
   }
 
   return next();
