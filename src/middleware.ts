@@ -2,11 +2,14 @@ import { defineMiddleware } from 'astro:middleware';
 import { firebase } from './firebase/config';
 
 const privateRoutes = ['/protected'];
+const publicRoutes = ['/login', '/register'];
 
-export const onRequest = defineMiddleware(({ locals }, next) => {
+export const onRequest = defineMiddleware(({ url, locals, redirect }, next) => {
 
   const isLoggedIn = !!firebase.auth.currentUser;
   const user = firebase.auth.currentUser;
+
+  firebase.auth.currentUser?.reload();
 
   locals.isLoggedIn = isLoggedIn;
   if (user){
@@ -16,6 +19,14 @@ export const onRequest = defineMiddleware(({ locals }, next) => {
       avatar : user.photoURL ?? '', 
       emailVerified : user.emailVerified
     };
+  };
+
+  if (!isLoggedIn && privateRoutes.includes(url.pathname)) {
+    return redirect('/');
+  }
+
+  if (isLoggedIn && publicRoutes.includes(url.pathname)) {
+    return redirect('/');
   }
 
   return next();
