@@ -2,14 +2,14 @@
 import { firebase } from "@/firebase/config";
 import MainLayout from "@/layouts/MainLayout.astro";
 
-const firebaseUser = firebase.auth.currentUser;
+const { user, isLoggedIn } = Astro.locals;
 
-if (!firebaseUser) {
-  Astro.redirect("/login");
+if (!isLoggedIn || !user) {
+  return Astro.redirect('/login');
 }
-await firebaseUser?.reload();
-const { emailVerified, displayName, email, photoURL } = firebaseUser!;
-const name = displayName ?? 'Unknown User';
+
+const { name, email, avatar, emailVerified } = user;
+
 ---
 
 <MainLayout title="Protected">
@@ -18,10 +18,10 @@ const name = displayName ?? 'Unknown User';
   >
     <div class="card w-96 mx-auto bg-white shadow-xl hover:shadow rounded-md">
       {
-        photoURL ? (
+        avatar ? (
           <img
             class="w-32 mx-auto rounded-full -mt-20 border-8 border-white"
-            src={photoURL}
+            src={avatar}
             alt={name}
           />
         ) : (
