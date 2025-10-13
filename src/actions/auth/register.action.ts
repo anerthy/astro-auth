@@ -2,6 +2,8 @@ import { firebase } from "@/firebase/config";
 import { defineAction } from "astro:actions";
 import { z } from "astro:schema";
 import { createUserWithEmailAndPassword, type AuthError } from "firebase/auth";
+import { sendEmailVerification } from "firebase/auth/cordova";
+import { updateProfile } from "firebase/auth/web-extension";
 
 const EXPIRES_IN = {
   YEAR: 1000 * 60 * 60 * 24 * 265,
@@ -34,9 +36,13 @@ export const registerUser = defineAction({
       
       await createUserWithEmailAndPassword(firebase.auth, email, password);
 
-      //guardar el nombre en el perfil
+      await updateProfile(firebase.auth.currentUser!, {
+        displayName: name
+      });
 
-      //verificar el correo electronico
+      await sendEmailVerification(firebase.auth.currentUser!, {
+        url: 'http://localhost:4321/protected?verified=true'
+      });
 
       return { ok: true, message: "User registered successfully" };
 
